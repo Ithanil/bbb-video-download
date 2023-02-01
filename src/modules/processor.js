@@ -35,7 +35,7 @@ module.exports.createVideo = async (config) => {
     }
     
     // cleanup workdir
-    fs.rmdirSync(config.workdir, { recursive: true })
+    fs.rmSync(config.workdir, { recursive: true })
 }
 
 const combinePresentationWithWebcams = async (presentation, webcams, config) => {
