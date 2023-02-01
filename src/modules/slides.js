@@ -7,7 +7,7 @@ const { parseStringPromise } = require('xml2js')
 const { parseNumbers } = require('xml2js/lib/processors')
 
 module.exports.renderSlides = async (config, duration) => {
-    const presentation = await parseSlidesData(config.args.input, duration)
+    const presentation = await parseSlidesData(config.datadir, duration)
     if (Object.keys(presentation.frames).length > 1) {
         await createFrames(config, presentation)
         await renderVideo(config, presentation)
@@ -159,7 +159,7 @@ const getFrameByTimestamp = (frames, timestamp) => {
 
 const createFrames = async (config, presentation) => {
     const port = await getPort({ port: getPort.makeRange(3000, 3100) })
-    const server = await createServer(config.args.input, port)
+    const server = await createServer(config.datadir, port)
     await captureFrames('http://localhost:' + port, presentation, config.workdir)
     server.close()
 }

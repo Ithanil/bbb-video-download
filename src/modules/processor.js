@@ -8,10 +8,6 @@ const { createCaptions } = require('./captions')
 const { parseMetadata } = require('./metadata')
 
 module.exports.createVideo = async (config) => {
-    // create workdir
-    fs.mkdirSync('./tmp', { recursive: true })
-    config.workdir = fs.mkdtempSync('./tmp/data')
-    
     // metadata
     const metadata = await parseMetadata(config)
 

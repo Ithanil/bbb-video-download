@@ -11,6 +11,7 @@ const parser = new ArgumentParser({
 parser.add_argument('-v', '--version', { action: 'version', version })
 parser.add_argument('-i', '--input', { help: 'path to BigBlueButton published presentation', required: true })
 parser.add_argument('-o', '--output', { help: 'path to outfile', required: true })
+parser.add_argument('-c', '--copy', { action: 'store_true', help: 'create a temporary copy of the presentation directory before working on it' })
 
 const arguments = parser.parse_args()
 validateArguments(arguments)
@@ -28,5 +29,3 @@ function validateArguments (arguments) {
     throw new Error('The presentation directory ' + arguments.input + ' does not exist.')
   }
 }
-
-

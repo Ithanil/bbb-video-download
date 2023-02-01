@@ -3,7 +3,7 @@ const { parseStringPromise } = require('xml2js')
 const { parseNumbers } = require('xml2js/lib/processors')
 
 module.exports.parseDeskshares = async (config) => {
-    const deskshareXmlFile = config.args.input + '/deskshare.xml'
+    const deskshareXmlFile = config.datadir + '/deskshare.xml'
     const deskshares = {
         parts: []
     }
@@ -28,8 +28,8 @@ module.exports.parseDeskshares = async (config) => {
 
     const formats = ['mp4', 'webm']
     for(let i=0; i<formats.length; i++) {
-        if (fs.existsSync(config.args.input + '/deskshare/deskshare.' + formats[i])) {
-            deskshares.video = config.args.input + '/deskshare/deskshare.' + formats[i]
+        if (fs.existsSync(config.datadir + '/deskshare/deskshare.' + formats[i])) {
+            deskshares.video = config.datadir + '/deskshare/deskshare.' + formats[i]
             continue
         }
     }
