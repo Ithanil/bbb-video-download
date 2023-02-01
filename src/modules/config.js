@@ -24,8 +24,9 @@ module.exports.config = {
 function validateArguments (arguments) {
   if (!arguments.output.endsWith('.mp4') && !arguments.output.endsWith('.webm'))
     throw new Error('Unsupported file type: ' + arguments.output)
-  
-
+  if (!fs.existsSync(arguments.input)) {
+    throw new Error('The presentation directory ' + arguments.input + ' does not exist.')
+  }
 }
 
 
