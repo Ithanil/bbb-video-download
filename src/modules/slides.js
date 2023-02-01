@@ -7,6 +7,7 @@ const { parseStringPromise } = require('xml2js')
 const { parseNumbers } = require('xml2js/lib/processors')
 
 module.exports.renderSlides = async (config, duration) => {
+    await convertSlidesToPng(config.args.input)
     const presentation = await parseSlidesData(config.args.input, duration)
     if (Object.keys(presentation.frames).length > 1) {
         await createFrames(config, presentation)
@@ -14,6 +15,27 @@ module.exports.renderSlides = async (config, duration) => {
         return presentation
     }
     return null
+}
+
+const convertSlidesToPng = async (basedir) => {
+    const pres_dirs = fs.readdirSync(basedir + 'presentation/').filter(function (file) {
+        return fs.statSync(basedir + 'presentation/' + file).isDirectory();
+    });
+    console.log(pres_dirs)
+    const svgspath = basedir + '/presentation/' + pres_dirs[0] + '/svgs'
+    console.log(svgspath)
+
+    if (fs.existsSync(svgspath)) {
+        const directory = fs.opendirSync(svgspath)
+        let file
+        while ((file = directory.readSync()) !== null) {
+            console.log(file.name)
+            const svgfilepath = svgspath + '/' + file.name
+            const pngfilepath = svgspath + '/' + file.name + '.png'
+            childProcess.execSync(`inkscape ${svgfilepath} --export-type=png --export-filename=${pngfilepath} --export-dpi 384`)
+        }
+        directory.closeSync()
+    }
 }
 
 const actions = {

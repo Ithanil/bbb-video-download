@@ -1,5 +1,5 @@
 FROM node:18-alpine
-RUN apk add --no-cache chromium ffmpeg
+RUN apk add --no-cache chromium ffmpeg inkscape
 RUN adduser -D bigbluebutton bigbluebutton
 USER bigbluebutton
 WORKDIR /home/bigbluebutton
