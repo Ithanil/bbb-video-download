@@ -314,6 +314,6 @@ const renderVideo = async (config, presentation) => {
     ws += "file '" + presentation.frames[timestamps.slice(-2)[0]].capture + "'\n"
 
     fs.writeFileSync(slidesTxtFile, ws)
-    childProcess.execSync(`ffmpeg -hide_banner -loglevel error -f concat -i ${slidesTxtFile} -threads 1 -y -filter_complex "[0:v]fps=24, scale=${presentation.viewport.width}:-2[out]" -map '[out]' -strict -2 -crf 22 -pix_fmt yuv420p ${videoFile}`)
+    childProcess.execSync(`ffmpeg -hide_banner -loglevel error -f concat -i ${slidesTxtFile} -threads ${config.args.threads} -y -filter_complex "[0:v]fps=24, scale=${presentation.viewport.width}:-2[out]" -map '[out]' -strict -2 -crf 22 -pix_fmt yuv420p ${videoFile}`)
     presentation.video = videoFile
 }

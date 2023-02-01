@@ -4,7 +4,6 @@ const { config }  = require('./modules/config')
 const { copyInputDir } = require('./modules/copy')
 const { createVideo } = require('./modules/processor')
 
-
 async function run(config) {
     try {
         const start = Date.now()

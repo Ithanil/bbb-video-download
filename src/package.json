@@ -3,7 +3,10 @@
   "version": "1.3.0",
   "description": "A BigBlueButton recording postscript to provide video download capability.",
   "main": "index.js",
-  "contributors": ["Tilman Moser", "Jan Kessler"]
+  "contributors": [
+    {"name": "Tilman Moser", "url": "https://github.com/tilmanmoser"},
+    {"name": "Jan Kessler", "url": "https://github.com/Ithanil"}
+  ],
   "license": "MIT",
   "dependencies": {
     "argparse": "^2.0.1",

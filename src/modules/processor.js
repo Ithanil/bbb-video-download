@@ -1,5 +1,6 @@
 const fs = require('fs')
 const util = require('util')
+const { config } = require('./config')
 const { createPresentationVideo } = require('./presentation')
 const { getWebcamsVideo } = require('./webcams')
 const childProcess = require('child_process')
@@ -55,24 +56,24 @@ const combinePresentationWithWebcams = async (presentation, webcams, config) => 
 }
 
 const copyWebcamsVideo = async (input, output) => {
-    childProcess.exec(`ffmpeg -hide_banner -loglevel error -threads 1 -i ${input} -y ${ouput}`)
+    childProcess.exec(`ffmpeg -hide_banner -loglevel error -threads ${config.args.threads} -i ${input} -y ${ouput}`)
 }
 
 const copyWebcamsAudioToPresentation = async (presentation, webcams, output) => {
-    childProcess.execSync(`ffmpeg -hide_banner -loglevel error -threads 1 -i ${presentation.video} -i ${webcams.video} -c:v copy -c:a aac -map 0:0 -map 1:1 -shortest -y ${output}`)
+    childProcess.execSync(`ffmpeg -hide_banner -loglevel error -threads ${config.args.threads} -i ${presentation.video} -i ${webcams.video} -c:v copy -c:a aac -map 0:0 -map 1:1 -shortest -y ${output}`)
 }
 
 const stackWebcamsToPresentation = async (presentation, webcams, output) => {
         const width = presentation.width + webcams.width
         let height = Math.max(presentation.height, webcams.height)
         if (height % 2) height += 1
-        childProcess.execSync(`ffmpeg -hide_banner -loglevel error -threads 1 -i ${presentation.video} -i ${webcams.video} -filter_complex "[0:v]pad=width=${width}:height=${height}:color=white[p];[p][1:v]overlay=x=${presentation.width}:y=0[out]" -map [out] -map 1:1 -c:a aac -shortest -y ${output}`)
+        childProcess.execSync(`ffmpeg -hide_banner -loglevel error -threads ${config.args.threads} -i ${presentation.video} -i ${webcams.video} -filter_complex "[0:v]pad=width=${width}:height=${height}:color=white[p];[p][1:v]overlay=x=${presentation.width}:y=0[out]" -map [out] -map 1:1 -c:a aac -shortest -y ${output}`)
 }
 
 const addCaptions = async (captions, videoObject) => {
     const tmpFile = videoObject.video + '.tmp.mp4'
 
-    let cmd = 'ffmpeg -hide_banner -loglevel error -threads 1 -i ' + videoObject.video
+    let cmd = 'ffmpeg -hide_banner -loglevel error -threads ${config.args.threads} -i ' + videoObject.video
     captions.forEach(caption => { cmd += ' -i ' + caption.file})
     cmd += ' -map 0'
     captions.forEach((caption,idx) => { cmd += ` -map ${idx+1}:s`})
@@ -89,7 +90,7 @@ const addCaptions = async (captions, videoObject) => {
 }
 
 const renderFinalVideo = async (input, output) => {
-    childProcess.execSync(`ffmpeg -hide_banner -loglevel error -threads 1 -i ${input} -y ${output}`)
+    childProcess.execSync(`ffmpeg -hide_banner -loglevel error -threads ${config.args.threads} -i ${input} -y ${output}`)
 }
 
 const moveFile = (src,dst,isRunningInDocker) => {

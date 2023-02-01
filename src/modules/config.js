@@ -12,6 +12,7 @@ parser.add_argument('-v', '--version', { action: 'version', version })
 parser.add_argument('-i', '--input', { help: 'path to BigBlueButton published presentation', required: true })
 parser.add_argument('-o', '--output', { help: 'path to outfile', required: true })
 parser.add_argument('-c', '--copy', { action: 'store_true', help: 'create a temporary copy of the presentation directory before working on it' })
+parser.add_argument('-t', '--threads', { help: 'number of threads to use for ffmpeg calls', default: 1 })
 
 const arguments = parser.parse_args()
 validateArguments(arguments)
