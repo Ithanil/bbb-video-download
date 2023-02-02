@@ -18,30 +18,31 @@ module.exports.renderSlides = async (config, duration) => {
 }
 
 const convertSlidesToPng = async (basedir) => {
-    const pres_dirs = fs.readdirSync(basedir + 'presentation/').filter(function (file) {
-        return fs.statSync(basedir + 'presentation/' + file).isDirectory();
-    });
-    console.log(pres_dirs)
-    const svgspath = basedir + '/presentation/' + pres_dirs[0] + '/svgs'
-    console.log(svgspath)
+    const pres_dirs = fs.readdirSync(basedir + '/presentation/').filter(function (file) {
+        return fs.statSync(basedir + '/presentation/' + file).isDirectory();
+    }); // determine presentation sub-directory
+    const svgspath = basedir + '/presentation/' + pres_dirs[0] + '/svgs' // path to svg slides
 
+    // use imagemagick convert to convert svg slides to png
     if (fs.existsSync(svgspath)) {
         const directory = fs.opendirSync(svgspath)
         let file
         while ((file = directory.readSync()) !== null) {
-            console.log(file.name)
-            const svgfilepath = svgspath + '/' + file.name
-            const pngfilepath = svgspath + '/' + file.name + '.png'
-            childProcess.execSync(`convert ${svgfilepath} ${pngfilepath}`)
+            if (file.name.endsWith('.svg') && file.isFile()) {
+                const svgfilepath = svgspath + '/' + file.name
+                const pngfilepath = svgspath + '/' + file.name + '.png'
+                childProcess.execSync(`convert ${svgfilepath} ${pngfilepath}`)
+            }
         }
         directory.closeSync()
     }
+
+    // create adapted shapes.svg which uses the png slides
     const shapes_svg = basedir + '/shapes.svg'
     if (fs.existsSync(shapes_svg)) {
         var shapes_str = fs.readFileSync(shapes_svg).toString()
         shapes_str.replace('svg', 'svg.png')
         fs.writeFileSync(basedir + '/shapes_png.svg', shapes_str)
-        //fs.cpSync(shapes_svg, basedir + '/shapes_png.svg', { recursive: true, errorOnExist: true })
     }
 }
 
@@ -345,3 +346,4 @@ const renderVideo = async (config, presentation) => {
     childProcess.execSync(`ffmpeg -hide_banner -loglevel error -f concat -i ${slidesTxtFile} -threads ${config.args.threads} -y -filter_complex "[0:v]fps=24, scale=${presentation.viewport.width}:-2[out]" -map '[out]' -strict -2 -crf 22 -pix_fmt yuv420p ${videoFile}`)
     presentation.video = videoFile
 }
+
