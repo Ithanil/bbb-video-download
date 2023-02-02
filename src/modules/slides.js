@@ -48,7 +48,7 @@ const convertSlidesToPng = async (basedir) => {
     const shapes_svg = basedir + '/shapes.svg'
     if (fs.existsSync(shapes_svg)) {
         var shapes_str = fs.readFileSync(shapes_svg).toString()
-        shapes_str.replace('svg', 'svg.png')
+        shapes_str = shapes_str.replace(/\.svg/g, '.svg.png')
         fs.writeFileSync(basedir + '/shapes_png.svg', shapes_str)
     }
 }
