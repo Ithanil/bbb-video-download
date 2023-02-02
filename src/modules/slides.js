@@ -7,13 +7,50 @@ const { parseStringPromise } = require('xml2js')
 const { parseNumbers } = require('xml2js/lib/processors')
 
 module.exports.renderSlides = async (config, duration) => {
-    const presentation = await parseSlidesData(config.datadir, duration)
+    let shapes_svg
+    if (config.args.png) {
+        await convertSlidesToPng(config.datadir)
+        shapes_svg = 'shapes_png.svg'
+    }
+    else {
+        shapes_svg = 'shapes.svg'
+    }
+    const presentation = await parseSlidesData(config.datadir, duration, shapes_svg)
     if (Object.keys(presentation.frames).length > 1) {
-        await createFrames(config, presentation)
+        await createFrames(config, presentation, shapes_svg)
         await renderVideo(config, presentation)
         return presentation
     }
     return null
+}
+
+const convertSlidesToPng = async (basedir) => {
+    const pres_dirs = fs.readdirSync(basedir + '/presentation/').filter(function (file) {
+        return fs.statSync(basedir + '/presentation/' + file).isDirectory();
+    }); // determine presentation sub-directory
+    const svgspath = basedir + '/presentation/' + pres_dirs[0] + '/svgs' // path to svg slides
+
+    // use imagemagick convert to convert svg slides to png
+    if (fs.existsSync(svgspath)) {
+        const directory = fs.opendirSync(svgspath)
+        let file
+        while ((file = directory.readSync()) !== null) {
+            if (file.name.endsWith('.svg') && file.isFile()) {
+                const svgfilepath = svgspath + '/' + file.name
+                const pngfilepath = svgspath + '/' + file.name + '.png'
+                childProcess.execSync(`convert -density 144 ${svgfilepath} ${pngfilepath}`)
+            }
+        }
+        directory.closeSync()
+    }
+
+    // create adapted shapes.svg which uses the png slides
+    const shapes_svg = basedir + '/shapes.svg'
+    if (fs.existsSync(shapes_svg)) {
+        var shapes_str = fs.readFileSync(shapes_svg).toString()
+        shapes_str.replace('svg', 'svg.png')
+        fs.writeFileSync(basedir + '/shapes_png.svg', shapes_str)
+    }
 }
 
 const actions = {
@@ -25,13 +62,13 @@ const actions = {
     hideDrawing: 'hideDrawing'
 }
 
-const parseSlidesData = async (basedir, duration) => {
+const parseSlidesData = async (basedir, duration, shapes_svg) => {
     const presentation = {
         frames: {}
     }
 
-    if (fs.existsSync(basedir + '/shapes.svg')) {
-        await parseStringPromise(fs.readFileSync(basedir + '/shapes.svg').toString(), {
+    if (fs.existsSync(basedir + '/' + shapes_svg)) {
+        await parseStringPromise(fs.readFileSync(basedir + '/' + shapes_svg).toString(), {
             attrValueProcessors: [parseNumbers],
             explicitArray: true
         }).then(data => {
@@ -157,10 +194,10 @@ const getFrameByTimestamp = (frames, timestamp) => {
 }
 
 
-const createFrames = async (config, presentation) => {
+const createFrames = async (config, presentation, shapes_svg) => {
     const port = await getPort({ port: getPort.makeRange(3000, 3100) })
     const server = await createServer(config.datadir, port)
-    await captureFrames('http://localhost:' + port, presentation, config.workdir)
+    await captureFrames('http://localhost:' + port, presentation, config.workdir, shapes_svg)
     server.close()
 }
 
@@ -178,7 +215,7 @@ const createServer = async (basedir, port) => {
     }).listen(port)
 }
 
-const captureFrames = async (serverUrl, presentation, workdir) => {
+const captureFrames = async (serverUrl, presentation, workdir, shapes_svg) => {
     const browser = await puppeteer.launch({
          executablePath: '/usr/bin/chromium-browser'
         })
@@ -188,7 +225,7 @@ const captureFrames = async (serverUrl, presentation, workdir) => {
         height: presentation.viewport.height,
         deviceScaleFactor: 1
     })
-    await page.goto(serverUrl + '/shapes.svg')
+    await page.goto(serverUrl + '/' + shapes_svg)
     await page.waitForSelector('#svgfile')
     // add cursor
     await page.evaluate(() => {
@@ -316,3 +353,4 @@ const renderVideo = async (config, presentation) => {
     childProcess.execSync(`ffmpeg -hide_banner -loglevel error -f concat -i ${slidesTxtFile} -threads ${config.args.threads} -y -filter_complex "[0:v]fps=24, scale=${presentation.viewport.width}:-2[out]" -map '[out]' -strict -2 -crf 22 -pix_fmt yuv420p ${videoFile}`)
     presentation.video = videoFile
 }
+
