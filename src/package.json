@@ -9,11 +9,11 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "argparse": "^2.0.1",
-    "dotenv": "^8.2.0",
-    "get-port": "^5.1.1",
-    "langs": "^2.0.0",
-    "puppeteer-core": "^5.3.1",
-    "xml2js": "^0.4.23"
+    "argparse": "",
+    "dotenv": "",
+    "get-port": "<6.0",
+    "langs": "",
+    "puppeteer-core": "",
+    "xml2js": ""
   }
 }
