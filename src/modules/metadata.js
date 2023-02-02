@@ -3,8 +3,8 @@ const { parseStringPromise } = require('xml2js')
 const { parseNumbers } = require('xml2js/lib/processors')
 
 module.exports.parseMetadata = async (config) => {
-    if (fs.existsSync(config.args.input + '/metadata.xml')) {
-        return parseStringPromise(fs.readFileSync(config.args.input + '/metadata.xml').toString(), {
+    if (fs.existsSync(config.datadir + '/metadata.xml')) {
+        return parseStringPromise(fs.readFileSync(config.datadir + '/metadata.xml').toString(), {
             attrValueProcessors: [parseNumbers],
             explicitArray: false
         }).then(data => {

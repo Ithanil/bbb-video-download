@@ -8,7 +8,7 @@ const { parseNumbers } = require('xml2js/lib/processors')
 
 module.exports.renderSlides = async (config, duration) => {
     await convertSlidesToPng(config.args.input)
-    const presentation = await parseSlidesData(config.args.input, duration)
+    const presentation = await parseSlidesData(config.datadir, duration)
     if (Object.keys(presentation.frames).length > 1) {
         await createFrames(config, presentation)
         await renderVideo(config, presentation)
@@ -181,7 +181,7 @@ const getFrameByTimestamp = (frames, timestamp) => {
 
 const createFrames = async (config, presentation) => {
     const port = await getPort({ port: getPort.makeRange(3000, 3100) })
-    const server = await createServer(config.args.input, port)
+    const server = await createServer(config.datadir, port)
     await captureFrames('http://localhost:' + port, presentation, config.workdir)
     server.close()
 }
@@ -336,6 +336,6 @@ const renderVideo = async (config, presentation) => {
     ws += "file '" + presentation.frames[timestamps.slice(-2)[0]].capture + "'\n"
 
     fs.writeFileSync(slidesTxtFile, ws)
-    childProcess.execSync(`ffmpeg -hide_banner -loglevel error -f concat -i ${slidesTxtFile} -threads 1 -y -filter_complex "[0:v]fps=24, scale=${presentation.viewport.width}:-2[out]" -map '[out]' -strict -2 -crf 22 -pix_fmt yuv420p ${videoFile}`)
+    childProcess.execSync(`ffmpeg -hide_banner -loglevel error -f concat -i ${slidesTxtFile} -threads ${config.args.threads} -y -filter_complex "[0:v]fps=24, scale=${presentation.viewport.width}:-2[out]" -map '[out]' -strict -2 -crf 22 -pix_fmt yuv420p ${videoFile}`)
     presentation.video = videoFile
 }

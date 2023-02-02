@@ -7,8 +7,8 @@ module.exports.getWebcamsVideo = async (config, duration) => {
     let videoFile = null    
     const formats = ['mp4', 'webm']
     for(let i=0; i<formats.length; i++) {
-        if (fs.existsSync(config.args.input + '/video/webcams.' + formats[i])) {
-            videoFile = config.args.input + '/video/webcams.' + formats[i]
+        if (fs.existsSync(config.datadir + '/video/webcams.' + formats[i])) {
+            videoFile = config.datadir + '/video/webcams.' + formats[i]
             continue
         }
     }
