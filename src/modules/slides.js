@@ -38,7 +38,7 @@ const convertSlidesToPng = async (basedir) => {
             if (file.name.endsWith('.svg') && file.isFile()) {
                 const svgfilepath = svgspath + '/' + file.name
                 const pngfilepath = svgspath + '/' + file.name + '.png'
-                childProcess.execSync(`convert ${svgfilepath} ${pngfilepath}`)
+                childProcess.execSync(`convert -density 144 ${svgfilepath} ${pngfilepath}`)
             }
         }
         directory.closeSync()
