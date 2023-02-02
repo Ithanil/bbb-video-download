@@ -180,7 +180,6 @@ const createServer = async (basedir, port) => {
 
 const captureFrames = async (serverUrl, presentation, workdir) => {
     const browser = await puppeteer.launch({
-         // headless: false,
          executablePath: '/usr/bin/chromium-browser'
         })
     const page = await browser.newPage()
@@ -192,7 +191,7 @@ const captureFrames = async (serverUrl, presentation, workdir) => {
     await page.goto(serverUrl + '/shapes.svg')
     await page.waitForSelector('#svgfile')
     // add cursor
-    await page.evaluate(() => { 
+    await page.evaluate(() => {
         let el = document.querySelector('#svgfile')
         el.innerHTML = el.innerHTML + '<circle id="cursor" cx="9999" cy="9999" r="5" stroke="red" stroke-width="3" fill="red" style="visibility:hidden" />'
     })
