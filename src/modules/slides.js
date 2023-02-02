@@ -7,10 +7,17 @@ const { parseStringPromise } = require('xml2js')
 const { parseNumbers } = require('xml2js/lib/processors')
 
 module.exports.renderSlides = async (config, duration) => {
-    await convertSlidesToPng(config.datadir)
-    const presentation = await parseSlidesData(config.datadir, duration)
+    let shapes_svg
+    if (config.args.png) {
+        await convertSlidesToPng(config.datadir)
+        shapes_svg = 'shapes_png.svg'
+    }
+    else {
+        shapes_svg = 'shapes.svg'
+    }
+    const presentation = await parseSlidesData(config.datadir, duration, shapes_svg)
     if (Object.keys(presentation.frames).length > 1) {
-        await createFrames(config, presentation)
+        await createFrames(config, presentation, shapes_svg)
         await renderVideo(config, presentation)
         return presentation
     }
@@ -55,13 +62,13 @@ const actions = {
     hideDrawing: 'hideDrawing'
 }
 
-const parseSlidesData = async (basedir, duration) => {
+const parseSlidesData = async (basedir, duration, shapes_svg) => {
     const presentation = {
         frames: {}
     }
 
-    if (fs.existsSync(basedir + '/shapes_png.svg')) {
-        await parseStringPromise(fs.readFileSync(basedir + '/shapes_png.svg').toString(), {
+    if (fs.existsSync(basedir + '/' + shapes_svg)) {
+        await parseStringPromise(fs.readFileSync(basedir + '/' + shapes_svg).toString(), {
             attrValueProcessors: [parseNumbers],
             explicitArray: true
         }).then(data => {
@@ -187,10 +194,10 @@ const getFrameByTimestamp = (frames, timestamp) => {
 }
 
 
-const createFrames = async (config, presentation) => {
+const createFrames = async (config, presentation, shapes_svg) => {
     const port = await getPort({ port: getPort.makeRange(3000, 3100) })
     const server = await createServer(config.datadir, port)
-    await captureFrames('http://localhost:' + port, presentation, config.workdir)
+    await captureFrames('http://localhost:' + port, presentation, config.workdir, shapes_svg)
     server.close()
 }
 
@@ -208,7 +215,7 @@ const createServer = async (basedir, port) => {
     }).listen(port)
 }
 
-const captureFrames = async (serverUrl, presentation, workdir) => {
+const captureFrames = async (serverUrl, presentation, workdir, shapes_svg) => {
     const browser = await puppeteer.launch({
          executablePath: '/usr/bin/chromium-browser'
         })
@@ -218,7 +225,7 @@ const captureFrames = async (serverUrl, presentation, workdir) => {
         height: presentation.viewport.height,
         deviceScaleFactor: 1
     })
-    await page.goto(serverUrl + '/shapes_png.svg')
+    await page.goto(serverUrl + '/' + shapes_svg)
     await page.waitForSelector('#svgfile')
     // add cursor
     await page.evaluate(() => {
