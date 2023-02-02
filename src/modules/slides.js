@@ -7,7 +7,7 @@ const { parseStringPromise } = require('xml2js')
 const { parseNumbers } = require('xml2js/lib/processors')
 
 module.exports.renderSlides = async (config, duration) => {
-    await convertSlidesToPng(config.args.input)
+    await convertSlidesToPng(config.datadir)
     const presentation = await parseSlidesData(config.datadir, duration)
     if (Object.keys(presentation.frames).length > 1) {
         await createFrames(config, presentation)
@@ -32,9 +32,16 @@ const convertSlidesToPng = async (basedir) => {
             console.log(file.name)
             const svgfilepath = svgspath + '/' + file.name
             const pngfilepath = svgspath + '/' + file.name + '.png'
-            childProcess.execSync(`inkscape ${svgfilepath} --export-type=png --export-filename=${pngfilepath} --export-dpi 384`)
+            childProcess.execSync(`convert ${svgfilepath} ${pngfilepath}`)
         }
         directory.closeSync()
+    }
+    const shapes_svg = basedir + '/shapes.svg'
+    if (fs.existsSync(shapes_svg)) {
+        var shapes_str = fs.readFileSync(shapes_svg).toString()
+        shapes_str.replace('svg', 'svg.png')
+        fs.writeFileSync(basedir + '/shapes_png.svg', shapes_str)
+        //fs.cpSync(shapes_svg, basedir + '/shapes_png.svg', { recursive: true, errorOnExist: true })
     }
 }
 
@@ -52,8 +59,8 @@ const parseSlidesData = async (basedir, duration) => {
         frames: {}
     }
 
-    if (fs.existsSync(basedir + '/shapes.svg')) {
-        await parseStringPromise(fs.readFileSync(basedir + '/shapes.svg').toString(), {
+    if (fs.existsSync(basedir + '/shapes_png.svg')) {
+        await parseStringPromise(fs.readFileSync(basedir + '/shapes_png.svg').toString(), {
             attrValueProcessors: [parseNumbers],
             explicitArray: true
         }).then(data => {
@@ -210,7 +217,7 @@ const captureFrames = async (serverUrl, presentation, workdir) => {
         height: presentation.viewport.height,
         deviceScaleFactor: 1
     })
-    await page.goto(serverUrl + '/shapes.svg')
+    await page.goto(serverUrl + '/shapes_png.svg')
     await page.waitForSelector('#svgfile')
     // add cursor
     await page.evaluate(() => {
